@@ -2,7 +2,9 @@ import { Icons } from "@/components/Icons";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import Phone from "@/components/Phone";
 import { Reviews } from "@/components/Reviews";
-import { Check, Star } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { ArrowRight, Check, Star } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -253,8 +255,40 @@ export default function Home() {
                 className="rounded-md object-cover bg-white shadow-2xl ring-1 ring-gray-900/10 h-full w-full"
               />
             </div>
+
+            <Phone className="w-60" imgSrc="/horse.jpg" />
           </div>
         </div>
+
+        <ul className="mx-auto mt-12 max-w-prose sm:text-lg space-y-2 w-fit">
+          <li className="w-fit">
+            <Check className="h-5 w-5 inline mr-1.5 text-green-600" />
+            High-quality silicone material
+          </li>
+          <li className="w-fit">
+            <Check className="h-5 w-5 inline mr-1.5 text-green-600" />
+            Scratch and fingerprint resistant coating
+          </li>
+          <li className="w-fit">
+            <Check className="h-5 w-5 inline mr-1.5 text-green-600" />
+            Wireless charging compatible
+          </li>
+          <li className="w-fit">
+            <Check className="h-5 w-5 inline mr-1.5 text-green-600" />5 year print warranty
+          </li>
+
+          <div className="flex justify-center">
+            <Link
+              href="/configure/upload"
+              className={buttonVariants({
+                size: "lg",
+                className: "mx-auto mt-8",
+              })}
+            >
+              Create your case now <ArrowRight className="h-4 w-4 ml-1.5" />
+            </Link>
+          </div>
+        </ul>
       </MaxWidthWrapper>
     </div>
   );
