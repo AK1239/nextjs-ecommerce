@@ -49,7 +49,11 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
           <div
             className={cn(
               "absolute inset-0 left-[3px] top-px right-[3px] bottom-px rounded-[32px]",
-              `bg-${options.color.tw}`
+              {
+                "bg-zinc-900": options.color.value === "black",
+                "bg-blue-950": options.color.value === "blue",
+                "bg-rose-950": options.color.value === "rose",
+              }
             )}
           />
         </div>
