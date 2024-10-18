@@ -9,15 +9,11 @@ import HandleComponent from "@/components/HandleComponent";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RadioGroup, Radio, Description } from "@headlessui/react";
 import { COLORS, FINISHES, MATERIALS, MODELS } from "@/validators/option-validator";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { ArrowRight, Check, ChevronsUpDown } from "lucide-react";
+import { BASE_PRICE } from "@/config/products";
 
 interface DesignConfiguratorProps {
   configId: string;
@@ -45,30 +41,19 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
         border-dashed border-gray-300 p-12 text-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       >
         <div className="relative w-60 bg-opacity-50 pointer-events-none aspect-[896/1831]">
-          <AspectRatio
-            ratio={896 / 1831}
-            className="pointer-events-none relative z-50 aspect-[896/1831] w-full"
-          >
-            <NextImage
-              fill
-              src="/phone-template.png"
-              alt="Phone Image"
-              className="pointer-events-none select-none z-50"
-            />
+          <AspectRatio ratio={896 / 1831} className="pointer-events-none relative z-50 aspect-[896/1831] w-full">
+            <NextImage fill src="/phone-template.png" alt="Phone Image" className="pointer-events-none select-none z-50" />
           </AspectRatio>
           <div
             className="absolute z-40 left-[3px] inset-0 top-px right-[3px] bottom-px rounded-[32px]
             shadow-[0_0_0_99999px_rgba(229,231,235,0.6)]"
           />
           <div
-            className={cn(
-              "absolute inset-0 left-[3px] top-px right-[3px] bottom-px rounded-[32px]",
-              {
-                "bg-zinc-900": options.color.value === "black",
-                "bg-blue-950": options.color.value === "blue",
-                "bg-rose-950": options.color.value === "rose",
-              }
-            )}
+            className={cn("absolute inset-0 left-[3px] top-px right-[3px] bottom-px rounded-[32px]", {
+              "bg-zinc-900": options.color.value === "black",
+              "bg-blue-950": options.color.value === "blue",
+              "bg-rose-950": options.color.value === "rose",
+            })}
           />
         </div>
         <Rnd
@@ -125,12 +110,7 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                           )
                         }
                       >
-                        <span
-                          className={cn(
-                            `bg-${color.tw}`,
-                            "size-8 rounded-full border border-black border-opacity-10"
-                          )}
-                        ></span>
+                        <span className={cn(`bg-${color.tw}`, "size-8 rounded-full border border-black border-opacity-10")}></span>
                       </Radio>
                     ))}
                   </div>
@@ -148,12 +128,9 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                       {MODELS.options.map((model) => (
                         <DropdownMenuItem
                           key={model.label}
-                          className={cn(
-                            "flex text-sm gap-1 items-center p-1.5 cursor-default hover:bg-zinc-100",
-                            {
-                              "bg-zinc-100": model.label === options.model.label,
-                            }
-                          )}
+                          className={cn("flex text-sm gap-1 items-center p-1.5 cursor-default hover:bg-zinc-100", {
+                            "bg-zinc-100": model.label === options.model.label,
+                          })}
                           onClick={() => {
                             setOptions((prev) => ({
                               ...prev,
@@ -161,12 +138,7 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                             }));
                           }}
                         >
-                          <Check
-                            className={cn(
-                              "mr-2 size-4",
-                              model.label === options.model.label ? "opacity-100" : "opacity-0"
-                            )}
-                          />
+                          <Check className={cn("mr-2 size-4", model.label === options.model.label ? "opacity-100" : "opacity-0")} />
                           {model.label}
                         </DropdownMenuItem>
                       ))}
@@ -214,13 +186,8 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                             </span>
                           </span>
 
-                          <Description
-                            as="span"
-                            className="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right"
-                          >
-                            <span className="font-medium text-gray-900">
-                              {formatPrice(option.price / 100)}
-                            </span>
+                          <Description as="span" className="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
+                            <span className="font-medium text-gray-900">{formatPrice(option.price / 100)}</span>
                           </Description>
                         </Radio>
                       ))}
@@ -231,6 +198,19 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
             </div>
           </div>
         </ScrollArea>
+
+        <div className="w-full px-8 h-16 bg-white">
+          <div className="h-px w-full bg-zinc-200"></div>
+          <div className="w-full h-full flex justify-end items-center">
+            <div className="w-full flex gap-6 items-center">
+              <p className="font-medium whitespace-nowrap">{formatPrice((BASE_PRICE + options.finish.price + options.material.price) / 100)}</p>
+              <Button size="sm" className="w-full">
+                Continue
+                <ArrowRight className="size-4 ml-1.5 inline" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
