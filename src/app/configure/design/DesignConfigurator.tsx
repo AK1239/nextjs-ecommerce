@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Rnd } from "react-rnd";
 import NextImage from "next/image";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -9,7 +9,12 @@ import HandleComponent from "@/components/HandleComponent";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RadioGroup, Radio, Description } from "@headlessui/react";
 import { COLORS, FINISHES, MATERIALS, MODELS } from "@/validators/option-validator";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ArrowRight, Check, ChevronsUpDown } from "lucide-react";
@@ -34,26 +39,108 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
     finish: FINISHES.options[0],
   });
 
+  const [renderedDimensions, setRenderedDimensions] = useState({
+    width: imageDimensions.width / 4,
+    height: imageDimensions.height / 4,
+  });
+
+  const [renderedPosition, setrenderedPosition] = useState({
+    x: 150,
+    y: 205,
+  });
+
+  const phoneCaseRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  async function saveConfiguration() {
+    try {
+      const {
+        left: caseLeft,
+        top: caseTop,
+        width,
+        height,
+      } = phoneCaseRef.current!.getBoundingClientRect();
+
+      const { left: containerLeft, top: containerTop } =
+        containerRef.current!.getBoundingClientRect();
+
+      const leftOffset = caseLeft - containerLeft;
+      const topOffset = caseTop - containerTop;
+
+      const actualX = renderedPosition.x - leftOffset;
+      const actualY = renderedPosition.y - topOffset;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+
+      const userImage = new Image();
+      userImage.crossOrigin = "anonymous";
+      userImage.src = imageUrl;
+      await new Promise((resolve) => {
+        userImage.onload = resolve;
+      });
+
+      ctx?.drawImage(
+        userImage,
+        actualX,
+        actualY,
+        renderedDimensions.width,
+        renderedDimensions.height
+      );
+
+      const base64 = canvas.toDataURL();
+      const base64Data = base64.split(",")[1];
+
+      const blob = base64ToBlob(base64Data, "image/png");
+      const file = new File([blob], "image.png", { type: "image/png" });
+    } catch (error) {}
+  }
+
+  function base64ToBlob(base64: string, mimeType: string) {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: mimeType });
+  }
+
   return (
-    <div className="relative mt-20 grid grid-cols-3 mb-20 pb-20">
+    <div className="relative mt-20 grid grid-cols-1 lg:grid-cols-3 mb-20 pb-20">
       <div
+        ref={containerRef}
         className="relative h-[37.5rem] overflow-hidden col-span-2 w-full max-w-4xl flex items-center justify-center rounded-lg border-2
         border-dashed border-gray-300 p-12 text-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       >
         <div className="relative w-60 bg-opacity-50 pointer-events-none aspect-[896/1831]">
-          <AspectRatio ratio={896 / 1831} className="pointer-events-none relative z-50 aspect-[896/1831] w-full">
-            <NextImage fill src="/phone-template.png" alt="Phone Image" className="pointer-events-none select-none z-50" />
+          <AspectRatio
+            ref={phoneCaseRef}
+            ratio={896 / 1831}
+            className="pointer-events-none relative z-50 aspect-[896/1831] w-full"
+          >
+            <NextImage
+              fill
+              src="/phone-template.png"
+              alt="Phone Image"
+              className="pointer-events-none select-none z-50"
+            />
           </AspectRatio>
           <div
             className="absolute z-40 left-[3px] inset-0 top-px right-[3px] bottom-px rounded-[32px]
             shadow-[0_0_0_99999px_rgba(229,231,235,0.6)]"
           />
           <div
-            className={cn("absolute inset-0 left-[3px] top-px right-[3px] bottom-px rounded-[32px]", {
-              "bg-zinc-900": options.color.value === "black",
-              "bg-blue-950": options.color.value === "blue",
-              "bg-rose-950": options.color.value === "rose",
-            })}
+            className={cn(
+              "absolute inset-0 left-[3px] top-px right-[3px] bottom-px rounded-[32px]",
+              {
+                "bg-zinc-900": options.color.value === "black",
+                "bg-blue-950": options.color.value === "blue",
+                "bg-rose-950": options.color.value === "rose",
+              }
+            )}
           />
         </div>
         <Rnd
@@ -62,6 +149,18 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
             y: 205,
             width: imageDimensions.width / 4,
             height: imageDimensions.height / 4,
+          }}
+          onResizeStop={(_, __, ref, ___, { x, y }) => {
+            setRenderedDimensions({
+              height: parseInt(ref.style.height.slice(0, -2)),
+              width: parseInt(ref.style.width.slice(0, -2)),
+            });
+
+            setrenderedPosition({ x, y });
+          }}
+          onDragStop={(_, data) => {
+            const { x, y } = data;
+            setrenderedPosition({ x, y });
           }}
           className="absolute z-20 border-[3px] border-primary"
           lockAspectRatio
@@ -78,7 +177,7 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
         </Rnd>
       </div>
 
-      <div className="h-[37.5rem] flex flex-col bg-white">
+      <div className="h-[37.5rem] w-full col-span-full lg:col-span-1 flex flex-col bg-white">
         <ScrollArea className="relative flex flex-1 overflow-auto">
           <div className="absolute z-10 inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white pointer-events-none"></div>
           <div className="px-8 pb-12 pt-8">
@@ -110,7 +209,12 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                           )
                         }
                       >
-                        <span className={cn(`bg-${color.tw}`, "size-8 rounded-full border border-black border-opacity-10")}></span>
+                        <span
+                          className={cn(
+                            `bg-${color.tw}`,
+                            "size-8 rounded-full border border-black border-opacity-10"
+                          )}
+                        ></span>
                       </Radio>
                     ))}
                   </div>
@@ -128,9 +232,12 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                       {MODELS.options.map((model) => (
                         <DropdownMenuItem
                           key={model.label}
-                          className={cn("flex text-sm gap-1 items-center p-1.5 cursor-default hover:bg-zinc-100", {
-                            "bg-zinc-100": model.label === options.model.label,
-                          })}
+                          className={cn(
+                            "flex text-sm gap-1 items-center p-1.5 cursor-default hover:bg-zinc-100",
+                            {
+                              "bg-zinc-100": model.label === options.model.label,
+                            }
+                          )}
                           onClick={() => {
                             setOptions((prev) => ({
                               ...prev,
@@ -138,7 +245,12 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                             }));
                           }}
                         >
-                          <Check className={cn("mr-2 size-4", model.label === options.model.label ? "opacity-100" : "opacity-0")} />
+                          <Check
+                            className={cn(
+                              "mr-2 size-4",
+                              model.label === options.model.label ? "opacity-100" : "opacity-0"
+                            )}
+                          />
                           {model.label}
                         </DropdownMenuItem>
                       ))}
@@ -186,8 +298,13 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                             </span>
                           </span>
 
-                          <Description as="span" className="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
-                            <span className="font-medium text-gray-900">{formatPrice(option.price / 100)}</span>
+                          <Description
+                            as="span"
+                            className="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right"
+                          >
+                            <span className="font-medium text-gray-900">
+                              {formatPrice(option.price / 100)}
+                            </span>
                           </Description>
                         </Radio>
                       ))}
@@ -203,7 +320,9 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
           <div className="h-px w-full bg-zinc-200"></div>
           <div className="w-full h-full flex justify-end items-center">
             <div className="w-full flex gap-6 items-center">
-              <p className="font-medium whitespace-nowrap">{formatPrice((BASE_PRICE + options.finish.price + options.material.price) / 100)}</p>
+              <p className="font-medium whitespace-nowrap">
+                {formatPrice((BASE_PRICE + options.finish.price + options.material.price) / 100)}
+              </p>
               <Button size="sm" className="w-full">
                 Continue
                 <ArrowRight className="size-4 ml-1.5 inline" />
