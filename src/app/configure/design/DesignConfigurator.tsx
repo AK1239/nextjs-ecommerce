@@ -7,7 +7,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { cn, formatPrice } from "@/lib/utils";
 import HandleComponent from "@/components/HandleComponent";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { RadioGroup, Radio, Description, Label } from "@headlessui/react";
+import { RadioGroup, Radio, Description } from "@headlessui/react";
 import { COLORS, FINISHES, MATERIALS, MODELS } from "@/validators/option-validator";
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Check, ChevronsUpDown } from "lucide-react";
 
 interface DesignConfiguratorProps {
@@ -201,9 +202,9 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                         >
                           <span className="flex items-center">
                             <span className="flex flex-col text-sm">
-                              <Label className="font-medium text-gray-900" as="span">
+                              <RadioGroup.Label className="font-medium text-gray-900" as="span">
                                 {option.label}
-                              </Label>
+                              </RadioGroup.Label>
 
                               {option.description ? (
                                 <Description as="span" className="text-gray-500">
