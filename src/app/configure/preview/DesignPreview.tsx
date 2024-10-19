@@ -9,8 +9,14 @@ import { Configuration } from "@prisma/client";
 import { ArrowRight, Check } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-dom-confetti";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { createCheckoutSession } from "./actions";
 
 const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
+  const router = useRouter();
+  const { toast } = useToast();
   const [showConfetti, setShowConfetti] = useState(false);
   const { color, model, finish, material } = configuration;
   const tw = COLORS.find((c) => c.value === color)?.tw;
@@ -23,6 +29,22 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
   let totalPrice = BASE_PRICE;
   if (finish === "textured") totalPrice += PRODUCT_PRICES.finish.textured;
   if (material === "polycarbonate") totalPrice += PRODUCT_PRICES.material.polycarbonate;
+
+  const { mutate: createPaymentSession } = useMutation({
+    mutationKey: ["get-checkout-session"],
+    mutationFn: createCheckoutSession,
+    onSuccess: ({ url }) => {
+      if (url) router.push(url);
+      else throw new Error("Unable to retrieve payment URL");
+    },
+    onError: () => {
+      toast({
+        title: "Something went wrong",
+        description: "There was an error on our end. Please try again",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <>
@@ -104,7 +126,10 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
             </div>
 
             <div className="mt-8 flex justify-end pb-12">
-              <Button className="px-8 sm:px-6 lg:px-8">
+              <Button
+                onClick={() => createPaymentSession({ configId: configuration.id })}
+                className="px-8 sm:px-6 lg:px-8"
+              >
                 Check out <ArrowRight className="size-4 ml-1.5 inline" />
               </Button>
             </div>
