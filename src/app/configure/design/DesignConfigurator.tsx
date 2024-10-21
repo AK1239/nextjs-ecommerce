@@ -125,6 +125,7 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
 
       await startUpload([file], { configId });
     } catch (error) {
+      console.error(error);
       toast({
         title: "Something went wrong",
         description: "There was a problem saving your config, please try again.",

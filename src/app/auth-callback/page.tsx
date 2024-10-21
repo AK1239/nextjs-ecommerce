@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { getAuthStatus } from "./actions";
-import { config } from "process";
 import { Loader2 } from "lucide-react";
 
 const Page = () => {
@@ -18,7 +17,7 @@ const Page = () => {
     }
   }, []);
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["auth-callback"],
     queryFn: async () => await getAuthStatus(),
     retry: true,
