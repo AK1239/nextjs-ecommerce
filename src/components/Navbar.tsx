@@ -35,7 +35,7 @@ bg-white/75 backdrop-blur-lg transition-all"
                 </Link>
                 {isAdmin ? (
                   <Link
-                    href="/api/auth/logout"
+                    href="/dashboard"
                     className={buttonVariants({
                       variant: "ghost",
                       size: "sm",
